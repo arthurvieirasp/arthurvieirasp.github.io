@@ -1,39 +1,228 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arthur Vieira Beserra</title>
-    <style>
-        body {
-            background-color: #f0f8ff; /* Azul claro quase branco */
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #004080;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 24px;
-        }
-        nav {
-            background-color: #0059b3;
-            padding: 10px;
-            text-align: center;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 15px;
-            font-size: 18px;
-        }
-        main {
-            width: 80%;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arthur Vieira Beserra</title>
+
+<!-- Importa fontes -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    background-color: #ffffff;
+    color: #000000;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+
+  /* --- Barra de navegação --- */
+  nav {
+    background-color: #e0e0e0;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  nav a {
+    color: #000000;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 16px;
+    display: inline-block;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+
+  nav a:hover {
+    text-decoration: underline;
+  }
+
+  /* --- Cabeçalho --- */
+  header {
+    text-align: center;
+    padding: 40px 15px 25px 15px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 36px;
+    margin-bottom: 10px;
+  }
+
+  header p {
+    font-size: 18px;
+    color: #555555;
+    margin-top: 0;
+    font-style: italic;
+  }
+
+  /* --- Bloco principal --- */
+  main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .nota {
+    margin-bottom: 40px;
+  }
+
+  .nota h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 26px;
+    margin-bottom: 10px;
+  }
+
+  .nota p {
+    font-size: 17px;
+  }
+
+  /* --- Tabela de textos --- */
+  .ultimos-textos h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  .tabela-container {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+  }
+
+  th, td {
+    text-align: left;
+    padding: 10px;
+    border-bottom: 1px solid #cccccc;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-size: 18px;
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  td {
+    font-size: 16px;
+  }
+
+  /* --- Rodapé --- */
+  footer {
+    background-color: #f5f5f5;
+    text-align: center;
+    padding: 15px;
+    font-size: 14px;
+    color: #555555;
+    margin-top: 40px;
+  }
+
+  /* --- Responsividade --- */
+  @media (max-width: 768px) {
+    nav a {
+      display: block;
+      margin: 8px 0;
+      font-size: 17px;
+    }
+
+    header h1 {
+      font-size: 28px;
+    }
+
+    header p {
+      font-size: 16px;
+    }
+
+    main {
+      padding: 15px;
+    }
+
+    .nota h2 {
+      font-size: 22px;
+    }
+
+    .nota p {
+      font-size: 16px;
+    }
+
+    th, td {
+      padding: 8px;
+      font-size: 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    header h1 {
+      font-size: 24px;
+    }
+
+    header p {
+      font-size: 15px;
+    }
+
+    .nota h2 {
+      font-size: 20px;
+    }
+
+    .nota p {
+      font-size: 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <nav>
+    <a href="#">TV</a>
+    <a href="#">Jornalismo</a>
+    <a href="#">Cinema</a>
+    <a href="#">História</a>
+    <a href="#">Viagens</a>
+    <a href="#">Vídeos</a>
+  </nav>
+
+  <header>
+    <h1>Arthur Vieira Beserra</h1>
+    <p>Jornalista e radialista apaixonado por televisão, jornalismo, cinema, história e viagens.</p>
+  </header>
+
+  <main>
+    <section class="nota">
+      <h2>Simplicidade é a chave</h2>
+      <p>Olá, querido leitor. </p><p>Já são 18 anos online e neste novo espaço, mais limpo e leve, quero manter meu diálogo com você.<br>O objetivo deste espaço é ser o mais leve possível para a internet, de modo a focarmos no que é importante: o conteúdo. </p><p>Espero contar com você nesta nova fase!</p>
+    </section>
+
+    <section class="ultimos-textos">
+      <h2>Últimos textos publicados</h2>
+      <div class="tabela-container">
+        <table>
+          <tr>
+            <th>Título</th>
+            <th>Sinopse</th>
+          </tr>
+          <tr>
+            <td>Exemplo de texto 1</td>
+            <td>Uma breve descrição do tema abordado neste artigo, para orientar o leitor.</td>
+          </tr>
+          <tr>
+            <td>Exemplo de texto 2</td>
+            <td>Outra pequena sinopse, destacando o enfoque principal do texto.</td>
+          </tr>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © Copyright Arthur Vieira Beserra - 2007 a 2025.
+  </footer>
+
+</body>
+</html>
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
