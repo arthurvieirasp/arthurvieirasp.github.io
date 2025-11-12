@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volta pra Casa</title>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gray-950 text-gray-100 p-6 font-sans">
+  <h1 class="text-xl font-semibold mb-6">🚍 Retorno</h1>
+
+  <div class="w-full max-w-xs flex flex-col gap-4">
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Primeiro ônibus:</span>
+      <input id="saida" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Segundo ônibus:</span>
+      <div class="flex gap-2">
+        <input id="onibus376" type="time" readonly class="flex-1 p-2 rounded-xl bg-gray-700 text-center" />
+        <input id="ajuste376" type="number" value="0" class="w-16 p-2 rounded-xl bg-gray-800 text-center" placeholder="+/-" />
+      </div>
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Último ônibus:</span>
+      <div class="flex gap-2">
+        <input id="onibus22" type="time" readonly class="flex-1 p-2 rounded-xl bg-gray-700 text-center" />
+        <input id="ajuste22" type="number" value="0" class="w-16 p-2 rounded-xl bg-gray-800 text-center" placeholder="+/-" />
+      </div>
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Chegada:</span>
+      <input id="chegada" type="time" readonly class="p-2 rounded-xl bg-green-700 text-center" />
+    </label>
+  </div>
+
+  <script>
+    const saida = document.getElementById("saida");
+    const onibus376 = document.getElementById("onibus376");
+    const onibus22 = document.getElementById("onibus22");
+    const chegada = document.getElementById("chegada");
+    const ajuste376 = document.getElementById("ajuste376");
+    const ajuste22 = document.getElementById("ajuste22");
+
+    function soma(hora, minutos) {
+      if (!hora) return "";
+      return dayjs(`2020-01-01T${hora}`).add(minutos, "minute").format("HH:mm");
+    }
+
+    function atualizar() {
+      const s = saida.value;
+      const a376 = parseInt(ajuste376.value) || 0;
+      const a22 = parseInt(ajuste22.value) || 0;
+
+      const h376 = soma(s, 30 + a376);
+      const h22 = soma(h376, 45 + a22);
+      const hFinal = soma(h22, 15);
+
+      onibus376.value = h376;
+      onibus22.value = h22;
+      chegada.value = hFinal;
+    }
+
+    saida.addEventListener("input", atualizar);
+    ajuste376.addEventListener("input", atualizar);
+    ajuste22.addEventListener("input", atualizar);
+  </script>
+</body>
+</html>

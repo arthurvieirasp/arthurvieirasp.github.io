@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>⌛ Controle de Jornada</title>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-950 text-gray-100 flex flex-col items-center p-6 font-sans">
+  <h1 class="text-2xl font-semibold mb-4">⌛ Controle de Jornada</h1>
+
+  <div class="w-full max-w-xl flex flex-col gap-4 mb-6">
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Horário de início:</span>
+      <input id="inicio" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <div class="flex gap-2">
+      <label class="flex flex-col flex-1">
+        <span class="text-sm mb-1">Saída para almoço:</span>
+        <input id="almocoInicio" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+      </label>
+      <label class="flex flex-col flex-1">
+        <span class="text-sm mb-1">Volta do almoço:</span>
+        <input id="almocoFim" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+      </label>
+    </div>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Duração dos slots (min):</span>
+      <input id="duracaoSlot" type="number" value="22" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <button id="gerar" class="bg-blue-600 hover:bg-blue-700 transition rounded-xl p-2 font-semibold">Gerar rotina</button>
+  </div>
+
+  <div id="rotina" class="w-full max-w-xl flex flex-col gap-3"></div>
+
+  <button id="salvar" class="mt-6 bg-green-600 hover:bg-green-700 transition rounded-xl p-2 font-semibold hidden">💾 Salvar dia</button>
+
+  <script>
+    const gerarBtn = document.getElementById("gerar");
+    const salvarBtn = document.getElementById("salvar");
+    const rotinaDiv = document.getElementById("rotina");
+
+    gerarBtn.addEventListener("click", () => {
+      const inicio = document.getElementById("inicio").value;
+      const almocoInicio = document.getElementById("almocoInicio").value;
+      const almocoFim = document.getElementById("almocoFim").value;
+      const duracaoSlot = parseInt(document.getElementById("duracaoSlot").value);
+
+      if (!inicio) return alert("Informe o horário de início da jornada.");
+
+      rotinaDiv.innerHTML = "";
+      let atual = dayjs(`2020-01-01T${inicio}`);
+      const fimJornada = atual.add(7, "hour").add(42, "minute");
+      let contador = 1;
+
+      while (atual.isBefore(fimJornada)) {
+        const fim = atual.add(duracaoSlot, "minute");
+
+        // Pular intervalo de almoço
+        if (
+          almocoInicio && almocoFim &&
+          atual.isBefore(dayjs(`2020-01-01T${almocoFim}`)) &&
+          fim.isAfter(dayjs(`2020-01-01T${almocoInicio}`))
+        ) {
+          atual = dayjs(`2020-01-01T${almocoFim}`);
+          continue;
+        }
+
+        if (fim.isAfter(fimJornada)) break;
+
+        const slotDiv = document.createElement("div");
+        slotDiv.className = "bg-gray-800 rounded-xl p-3 flex flex-col gap-1";
+
+        slotDiv.innerHTML = `
+          <div class="flex justify-between text-sm">
+            <span>Slot ${contador}</span>
+            <span>${atual.format("HH:mm")} → ${fim.format("HH:mm")}</span>
+          </div>
+          <textarea placeholder="Atividade..." class="p-2 rounded-lg bg-gray-900 w-full text-sm"></textarea>
+        `;
+
+        rotinaDiv.appendChild(slotDiv);
+        atual = fim.add(5, "minute"); // descanso de 5 min entre slots
+        contador++;
+      }
+
+      salvarBtn.classList.remove("hidden");
+    });
+
+    salvarBtn.addEventListener("click", () => {
+      const atividades = [];
+      const blocos = document.querySelectorAll("#rotina > div");
+
+      atividades.push(`📅 Registro do dia: ${dayjs().format("DD/MM/YYYY")}\n`);
+
+      blocos.forEach((b) => {
+        const spans = b.querySelectorAll("span");
+        const titulo = spans[0].textContent;
+        const horario = spans[1].textContent;
+        const texto = b.querySelector("textarea").value || "(sem registro)";
+        atividades.push(`${titulo} [${horario}]: ${texto}`);
+      });
+
+      const blob = new Blob([atividades.join("\n")], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      const data = dayjs().format("YYYY-MM-DD");
+      link.download = `rotina_${data}.txt`;
+      link.click();
+    });
+  </script>
+</body>
+</html>

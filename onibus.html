@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculadora de Deslocamento</title>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gray-950 text-gray-100 p-6 font-sans">
+  <h1 class="text-xl font-semibold mb-6">🚌 Calculadora de Deslocamento</h1>
+
+  <div class="w-full max-w-xs flex flex-col gap-4">
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Horário de saída:</span>
+      <input id="saida" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Chegada ao Terminal Diadema:</span>
+      <input id="onibus1" type="time" readonly class="p-2 rounded-xl bg-gray-700 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Saída do ônibus Brooklin:</span>
+      <div class="flex gap-2">
+        <input id="onibus2" type="time" readonly class="flex-1 p-2 rounded-xl bg-gray-700 text-center" />
+        <input id="ajuste2" type="number" value="0" class="w-16 p-2 rounded-xl bg-gray-800 text-center" placeholder="+/-" />
+      </div>
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Saída do ônibus Butantã ou Campo Limpo:</span>
+      <div class="flex gap-2">
+        <input id="onibus3" type="time" readonly class="flex-1 p-2 rounded-xl bg-gray-700 text-center" />
+        <input id="ajuste3" type="number" value="0" class="w-16 p-2 rounded-xl bg-gray-800 text-center" placeholder="+/-" />
+      </div>
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Chegada:</span>
+      <input id="chegada" type="time" readonly class="p-2 rounded-xl bg-green-700 text-center" />
+    </label>
+  </div>
+
+  <script>
+    const saida = document.getElementById("saida");
+    const onibus1 = document.getElementById("onibus1");
+    const onibus2 = document.getElementById("onibus2");
+    const onibus3 = document.getElementById("onibus3");
+    const chegada = document.getElementById("chegada");
+    const ajuste2 = document.getElementById("ajuste2");
+    const ajuste3 = document.getElementById("ajuste3");
+
+    function soma(hora, minutos) {
+      if (!hora) return "";
+      return dayjs(`2020-01-01T${hora}`).add(minutos, "minute").format("HH:mm");
+    }
+
+    function atualizar() {
+      const s = saida.value;
+      const a2 = parseInt(ajuste2.value) || 0;
+      const a3 = parseInt(ajuste3.value) || 0;
+
+      const h1 = soma(s, 25);
+      const h2 = soma(h1, 10 + a2);
+      const h3 = soma(h2, 40 + 5 + 10 + a3);
+      const hFinal = soma(h3, 20);
+
+      onibus1.value = h1;
+      onibus2.value = h2;
+      onibus3.value = h3;
+      chegada.value = hFinal;
+    }
+
+    saida.addEventListener("input", atualizar);
+    ajuste2.addEventListener("input", atualizar);
+    ajuste3.addEventListener("input", atualizar);
+  </script>
+</body>
+</html>

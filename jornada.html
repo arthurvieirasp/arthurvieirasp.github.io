@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle de Jornada</title>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center bg-gray-950 text-gray-100 p-6 font-sans">
+  <h1 class="text-xl font-semibold mb-6">🕒 Controle de Jornada</h1>
+
+  <div class="w-full max-w-xs flex flex-col gap-4">
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Início da jornada:</span>
+      <input id="inicio" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Saída para almoço (ajustável):</span>
+      <input id="saidaAlmoco" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Volta do almoço (1h após saída):</span>
+      <input id="voltaAlmoco" type="time" readonly class="p-2 rounded-xl bg-gray-700 text-center" />
+    </label>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Fim da jornada (7h42 após início):</span>
+      <input id="fim" type="time" readonly class="p-2 rounded-xl bg-green-700 text-center" />
+    </label>
+  </div>
+
+  <script>
+    const inicio = document.getElementById("inicio");
+    const saidaAlmoco = document.getElementById("saidaAlmoco");
+    const voltaAlmoco = document.getElementById("voltaAlmoco");
+    const fim = document.getElementById("fim");
+
+    function soma(hora, minutos) {
+      if (!hora) return "";
+      return dayjs(`2020-01-01T${hora}`).add(minutos, "minute").format("HH:mm");
+    }
+
+    function atualizar() {
+      const hInicio = inicio.value;
+      const hSaidaAlmoco = saidaAlmoco.value;
+
+      // se não tiver horário de almoço definido, assume 4h após início
+      const saida = hSaidaAlmoco || soma(hInicio, 240); // 4h = pausa padrão
+      const volta = soma(saida, 60); // 1h de almoço
+      const fimJornada = soma(hInicio, 7 * 60 + 42); // 7h42min = total
+
+      voltaAlmoco.value = volta;
+      fim.value = fimJornada;
+    }
+
+    inicio.addEventListener("input", atualizar);
+    saidaAlmoco.addEventListener("input", atualizar);
+  </script>
+</body>
+</html>
