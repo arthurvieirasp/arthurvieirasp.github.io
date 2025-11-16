@@ -11,53 +11,91 @@
   <h1 class="text-xl font-semibold mb-6">🕒 Controle de Jornada</h1>
 
   <div class="w-full max-w-xs flex flex-col gap-4">
+
     <label class="flex flex-col">
-      <span class="text-sm mb-1">Início da jornada:</span>
-      <input id="inicio" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+      <span class="text-sm mb-1">Horas totais da jornada:</span>
+      <input id="horasJornada" type="text" placeholder="Ex: 7:30 ou 7.5" class="p-2 rounded-xl bg-gray-800 text-center" />
+    </label>
+
+    <div class="flex gap-2 justify-center mt-2">
+      <button id="preset712" class="px-3 py-1 bg-gray-700 rounded-xl text-sm">7:12</button>
+      <button id="preset800" class="px-3 py-1 bg-gray-700 rounded-xl text-sm">8:00</button>
+    </div>
+
+    <label class="flex flex-col">
+      <span class="text-sm mb-1">Entrada:</span>
+      <input id="entrada" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
     </label>
 
     <label class="flex flex-col">
-      <span class="text-sm mb-1">Saída para almoço (ajustável):</span>
-      <input id="saidaAlmoco" type="time" class="p-2 rounded-xl bg-gray-800 text-center" />
+      <span class="text-sm mb-1">Saída (automática):</span>
+      <input id="saida" type="time" readonly class="p-2 rounded-xl bg-green-700 text-center" />
     </label>
 
     <label class="flex flex-col">
-      <span class="text-sm mb-1">Volta do almoço (1h após saída):</span>
-      <input id="voltaAlmoco" type="time" readonly class="p-2 rounded-xl bg-gray-700 text-center" />
+      <span class="text-sm mb-1">Recomendação de despertador (-10 min):</span>
+      <input id="despertador" type="time" readonly class="p-2 rounded-xl bg-gray-700 text-center" />
     </label>
 
-    <label class="flex flex-col">
-      <span class="text-sm mb-1">Fim da jornada (7h42 após início):</span>
-      <input id="fim" type="time" readonly class="p-2 rounded-xl bg-green-700 text-center" />
-    </label>
   </div>
 
   <script>
-    const inicio = document.getElementById("inicio");
-    const saidaAlmoco = document.getElementById("saidaAlmoco");
-    const voltaAlmoco = document.getElementById("voltaAlmoco");
-    const fim = document.getElementById("fim");
+    const horasJornada = document.getElementById("horasJornada");
+    const entrada = document.getElementById("entrada");
+    const saida = document.getElementById("saida");
+    const despertador = document.getElementById("despertador");
 
     function soma(hora, minutos) {
       if (!hora) return "";
       return dayjs(`2020-01-01T${hora}`).add(minutos, "minute").format("HH:mm");
     }
 
-    function atualizar() {
-      const hInicio = inicio.value;
-      const hSaidaAlmoco = saidaAlmoco.value;
-
-      // se não tiver horário de almoço definido, assume 4h após início
-      const saida = hSaidaAlmoco || soma(hInicio, 240); // 4h = pausa padrão
-      const volta = soma(saida, 60); // 1h de almoço
-      const fimJornada = soma(hInicio, 7 * 60 + 42); // 7h42min = total
-
-      voltaAlmoco.value = volta;
-      fim.value = fimJornada;
+    function parseHorasRaw(raw) {
+      if (!raw) return 0;
+      raw = raw.trim();
+      // aceita 7:30 ou 7.5 ou 7,5
+      if (raw.includes(':')) {
+        const parts = raw.split(':').map(s => s.trim());
+        const h = Number(parts[0]) || 0;
+        const m = Number(parts[1]) || 0;
+        return h + (m / 60);
+      }
+      // trocar vírgula por ponto
+      raw = raw.replace(',', '.');
+      const val = parseFloat(raw);
+      return isNaN(val) ? 0 : val;
     }
 
-    inicio.addEventListener("input", atualizar);
-    saidaAlmoco.addEventListener("input", atualizar);
+    function atualizar() {
+      const hEntrada = entrada.value;
+      const hJornada = parseHorasRaw(horasJornada.value);
+
+      if (!hEntrada || !hJornada) {
+        saida.value = "";
+        despertador.value = "";
+        return;
+      }
+
+      const totalMin = Math.round(hJornada * 60) + 60; // jornada + 1h de almoço fixa
+      const fim = soma(hEntrada, totalMin);
+      const horaDespertador = soma(fim, -10);
+
+      saida.value = fim;
+      despertador.value = horaDespertador;
+    }
+
+    document.getElementById("preset712").addEventListener("click", () => {
+      horasJornada.value = "7:12";
+      atualizar();
+    });
+
+    document.getElementById("preset800").addEventListener("click", () => {
+      horasJornada.value = "8:00";
+      atualizar();
+    });
+
+    horasJornada.addEventListener("input", atualizar);
+    entrada.addEventListener("input", atualizar);
   </script>
 </body>
 </html>
