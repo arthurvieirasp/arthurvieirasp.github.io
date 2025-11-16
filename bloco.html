@@ -12,6 +12,8 @@
 
     <h1 class="text-center text-xl font-semibold mb-1">📝 Bloco de Notas HAL</h1>
 
+    <input id="filename" type="text" placeholder="Nome do arquivo (sem .txt)" class="w-full p-2 bg-gray-800 text-gray-100 rounded-xl border border-gray-700 focus:outline-none focus:border-green-400 text-sm" />
+
     <textarea id="editor" class="w-full h-64 p-3 bg-gray-800 text-gray-100 rounded-xl border border-gray-700 focus:outline-none focus:border-green-400 font-mono text-sm" placeholder="Digite suas anotações aqui..."></textarea>
 
     <div class="flex gap-3 w-full">
@@ -27,12 +29,15 @@
   <script>
     function salvarTXT() {
       const texto = document.getElementById('editor').value;
+      let nome = document.getElementById('filename').value.trim();
+      if (!nome) nome = 'nota_hal';
+
       const blob = new Blob([texto], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'nota_hal.txt';
+      a.download = `${nome}.txt`;
       a.click();
       URL.revokeObjectURL(url);
     }
