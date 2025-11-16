@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloco de Notas HAL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-gray-100 p-6 font-sans">
+
+  <div class="w-full max-w-md flex flex-col gap-4 bg-gray-900 p-4 rounded-2xl shadow-xl border border-gray-800">
+
+    <h1 class="text-center text-xl font-semibold mb-1">📝 Bloco de Notas HAL</h1>
+
+    <textarea id="editor" class="w-full h-64 p-3 bg-gray-800 text-gray-100 rounded-xl border border-gray-700 focus:outline-none focus:border-green-400 font-mono text-sm" placeholder="Digite suas anotações aqui..."></textarea>
+
+    <div class="flex gap-3 w-full">
+      <button onclick="salvarTXT()" class="flex-1 p-2 bg-green-700 rounded-xl border border-green-600 active:border-green-400">Salvar TXT</button>
+      <label class="flex-1 p-2 bg-gray-800 rounded-xl border border-gray-700 text-center cursor-pointer active:border-gray-500">
+        Abrir TXT
+        <input type="file" id="fileInput" accept=".txt" class="hidden" onchange="abrirTXT(event)">
+      </label>
+    </div>
+
+  </div>
+
+  <script>
+    function salvarTXT() {
+      const texto = document.getElementById('editor').value;
+      const blob = new Blob([texto], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'nota_hal.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function abrirTXT(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('editor').value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+  </script>
+
+</body>
+</html>
