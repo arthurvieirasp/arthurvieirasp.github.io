@@ -12,6 +12,9 @@
 
   <!-- TOPO -->
   <div class="flex justify-between items-center px-10 py-6 border-b border-gray-800">
+    <button onclick="toggleScreen()" class="text-sm px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-900 transition">
+      🖥 Desligar tela
+    </button>
     <div class="text-5xl font-mono" id="clock">--:--</div>
     <div class="text-xl text-gray-400" id="date">--</div>
     <div class="text-xl text-green-400" id="temp">🌡 --°C</div>
@@ -32,6 +35,9 @@
 </div>
 
 <audio id="player" autoplay></audio>
+
+<!-- TELA PRETA -->
+<div id="screenOff" class="hidden fixed inset-0 bg-black z-50"></div>
 
 <script>
 const RADIOS = [
@@ -137,6 +143,18 @@ async function atualizarTemperatura(){
 
 atualizarTemperatura();
 setInterval(atualizarTemperatura,15*60*1000);
+
+// TELA PRETA (SCREEN OFF)
+let telaApagada = false;
+function toggleScreen(){
+  const el = document.getElementById('screenOff');
+  telaApagada = !telaApagada;
+  if(telaApagada){
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
 
 // TELA CHEIA
 function fullscreen(){
