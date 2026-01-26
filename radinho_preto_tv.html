@@ -6,6 +6,7 @@
 <title>Radinho Preto TV</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-black text-gray-100 w-screen h-screen overflow-hidden font-sans select-none">
 
 <div class="flex flex-col h-full">
@@ -15,6 +16,7 @@
     <button onclick="toggleScreen()" class="text-sm px-4 py-2 border border-gray-700 rounded-lg hover:bg-gray-900 transition">
       🖥 Desligar tela
     </button>
+
     <div class="text-5xl font-mono" id="clock">--:--</div>
     <div class="text-xl text-gray-400" id="date">--</div>
     <div class="text-xl text-green-400" id="temp">🌡 --°C</div>
@@ -34,6 +36,142 @@
 
 </div>
 
+<audio id="player" autoplay></audio>
+
+<!-- TELA PRETA -->
+<div id="screenOff" class="hidden fixed inset-0 bg-black z-50"></div>
+
+<script>
+const RADIOS = [
+  {nome:"Manchete", logo:"https://static-media.streema.com/media/cache/bb/72/bb720272f1f110a8fb90a3b2e697c986.jpg"},
+  {nome:"ClassicPan", logo:"https://static.mytuner.mobi/media/tvos_radios/337/jp-classic-pan.cf47ddce.jpg"},
+  {nome:"Pampa", logo:"https://i1.sndcdn.com/artworks-000272965253-n2034k-t500x500.jpg"},
+  {nome:"Cultura", logo:"https://upload.wikimedia.org/wikipedia/commons/0/01/Cultura_FM_sp.jpg"}
+];
+
+const URLS = {
+  "Manchete": "https://8410.brasilstream.com.br/stream?origem=site",
+  "ClassicPan": "https://stream.zeno.fm/rtk4pzcome3vv",
+  "Pampa": "https://cast4.audiostream.com.br:2653/mp3",
+  "Cultura": "https://player-culturafm.stream.uol.com.br/live/culturafm.m3u8"
+};
+
+let indiceSelecionado = 0;
+let radioAtual = null;
+
+const player = document.getElementById("player");
+const display = document.getElementById("radioDisplay");
+const grid = document.getElementById("radioGrid");
+
+function tocarClick(){
+  const ctx = new AudioContext();
+  const o = ctx.createOscillator();
+  o.frequency.value = 800;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),50);
+}
+
+function tocarRadio(nome){
+  radioAtual = nome;
+  player.src = URLS[nome];
+  player.play().catch(()=>{});
+  display.textContent = nome;
+  destacar(nome);
+  tocarClick();
+}
+
+function destacar(nome){
+  document.querySelectorAll('.radio-btn').forEach(b=>{
+    b.classList.remove('border-green-500','bg-green-900/40','ring-2','ring-green-500');
+  });
+  const btn = document.getElementById('btn-'+nome);
+  if(btn) btn.classList.add('border-green-500','bg-green-900/40','ring-2','ring-green-500');
+}
+
+function atualizarSelecao(){
+  const nome = RADIOS[indiceSelecionado].nome;
+  destacar(nome);
+}
+
+function criarBotoes(){
+  RADIOS.forEach((radio,i)=>{
+    const btn = document.createElement('button');
+    btn.id = 'btn-'+radio.nome;
+    btn.className = 'radio-btn flex flex-col items-center justify-center rounded-xl border border-gray-700 bg-gray-950 hover:bg-gray-900 transition focus:outline-none p-4';
+
+    btn.innerHTML = `
+      <img src="${radio.logo}" class="w-20 h-20 object-contain mb-3 rounded-lg">
+      <div class="text-lg">${radio.nome}</div>
+    `;
+
+    btn.onclick = ()=>{ indiceSelecionado=i; tocarRadio(radio.nome); };
+    grid.appendChild(btn);
+  });
+}
+
+criarBotoes();
+atualizarSelecao();
+
+// CONTROLE REMOTO / TECLADO
+document.addEventListener('keydown', e=>{
+  const cols = 4;
+  if(e.key==='ArrowRight') indiceSelecionado = (indiceSelecionado+1)%RADIOS.length;
+  if(e.key==='ArrowLeft') indiceSelecionado = (indiceSelecionado-1+RADIOS.length)%RADIOS.length;
+  if(e.key==='ArrowDown') indiceSelecionado = (indiceSelecionado+cols)%RADIOS.length;
+  if(e.key==='ArrowUp') indiceSelecionado = (indiceSelecionado-cols+RADIOS.length)%RADIOS.length;
+  if(e.key==='Enter') tocarRadio(RADIOS[indiceSelecionado].nome);
+  atualizarSelecao();
+});
+
+// RELOGIO
+function atualizarRelogio(){
+  const agora = new Date();
+  document.getElementById('clock').textContent = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('date').textContent = agora.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+}
+setInterval(atualizarRelogio,1000);
+atualizarRelogio();
+
+// TEMPERATURA
+async function atualizarTemperatura(){
+  try{
+    const pos = await new Promise((res,rej)=>navigator.geolocation.getCurrentPosition(res,rej));
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const r = await fetch(url);
+    const j = await r.json();
+    document.getElementById('temp').textContent = `🌡 ${Math.round(j.current_weather.temperature)}°C`;
+  }catch{
+    document.getElementById('temp').textContent = '🌡 --°C';
+  }
+}
+
+atualizarTemperatura();
+setInterval(atualizarTemperatura,15*60*1000);
+
+// TELA PRETA
+let telaApagada = false;
+function toggleScreen(){
+  const el = document.getElementById('screenOff');
+  telaApagada = !telaApagada;
+  if(telaApagada){
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+// TELA CHEIA
+function fullscreen(){
+  if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+}
+setTimeout(fullscreen,1000);
+
+</script>
+</body>
+</html>
 <audio id="player" autoplay></audio>
 
 <!-- TELA PRETA -->
