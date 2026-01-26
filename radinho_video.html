@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Painel Diário</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    color: #00ff9c;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+#topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    border-bottom: 1px solid #1f3b2f;
+}
+
+#clock {
+    font-size: 48px;
+    letter-spacing: 2px;
+}
+
+#date { color: #aaa; }
+#temp { color: #00ff9c; }
+
+#powerBtn {
+    background: #0b1a14;
+    border: 1px solid #00ff9c;
+    color: #00ff9c;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#screenOff {
+    position: fixed;
+    inset: 0;
+    background: black;
+    display: none;
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+    color: #00ff9c;
+    font-size: 48px;
+}
+
+#main {
+    display: flex;
+    height: calc(100vh - 160px);
+}
+
+#radioPanel {
+    width: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+}
+
+#cameraBox {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    alignments: center;
+}
+
+.camera-container {
+    width: 720px;
+    height: 405px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+    box-shadow: 0 0 25px rgba(0,255,170,.15), inset 0 0 25px rgba(0,0,0,.6);
+}
+
+.camera-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#radiosBar {
+    height: 120px;
+    border-top: 1px solid #1f3b2f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.radioLogo {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    cursor: pointer;
+    filter: grayscale(1);
+    transition: .3s;
+}
+
+.radioLogo:hover {
+    filter: grayscale(0);
+    transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<div id="topbar">
+    <button id="powerBtn">🖥️ Desligar tela</button>
+    <div id="clock">00:00</div>
+    <div>
+        <div id="date"></div>
+        <div id="temp">🌡️ 19°C · Diadema</div>
+    </div>
+</div>
+
+<div id="main">
+    <div id="radioPanel">
+        <span id="radioName">Classic Pan FM</span>
+    </div>
+
+    <div id="cameraBox">
+        <div class="camera-container">
+            <iframe
+              src="https://www.cxtvlive.com/live-camera/av-vinte-e-tres-de-maio-transito-ao-vivo"
+              loading="lazy"
+              referrerpolicy="no-referrer"
+            ></iframe>
+        </div>
+    </div>
+</div>
+
+<div id="radiosBar">
+    <img class="radioLogo" src="https://static-media.streema.com/media/cache/bb/72/bb720272f1f110a8fb90a3b2e697c986.jpg"
+         onclick="setRadio('Manchete AM','https://icecast.streema.com.br:8000/manchete')">
+
+    <img class="radioLogo" src="https://static.mytuner.mobi/media/tvos_radios/337/jp-classic-pan.cf47ddce.jpg"
+         onclick="setRadio('Classic Pan FM','https://icecast2.playradio.com.br:8000/panclassic.mp3')">
+
+    <img class="radioLogo" src="https://i1.sndcdn.com/artworks-000272965253-n2034k-t500x500.jpg"
+         onclick="setRadio('Pampa FM','https://icecast.pampafm.com.br/pampa.mp3')">
+
+    <img class="radioLogo" src="https://upload.wikimedia.org/wikipedia/commons/0/01/Cultura_FM_sp.jpg"
+         onclick="setRadio('Cultura FM','https://streaming.cultura.com.br/culturafm')">
+</div>
+
+<div id="screenOff">Desligado</div>
+
+<audio id="radioPlayer" autoplay></audio>
+
+<script>
+// relógio
+function updateClock() {
+    const now = new Date();
+    document.getElementById("clock").innerText =
+        now.toLocaleTimeString("pt-BR",{hour:'2-digit',minute:'2-digit'});
+    document.getElementById("date").innerText =
+        now.toLocaleDateString("pt-BR",{weekday:'long', day:'2-digit', month:'long'});
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// botão desligar tela
+const screen = document.getElementById("screenOff");
+document.getElementById("powerBtn").onclick = ()=>{
+    screen.style.display = screen.style.display === "flex" ? "none" : "flex";
+};
+
+// desbloqueio de áudio
+let audioUnlocked = false;
+function unlockAudio() {
+    if (audioUnlocked) return;
+    const player = document.getElementById("radioPlayer");
+    player.play().then(()=> audioUnlocked = true).catch(()=>{});
+}
+document.addEventListener("click", unlockAudio, { once: true });
+
+// rádios
+function setRadio(name,url){
+    document.getElementById("radioName").innerText = name;
+    const player = document.getElementById("radioPlayer");
+    player.src = url;
+    player.play().catch(()=>{});
+}
+
+</script>
+
+</body>
+</html>
