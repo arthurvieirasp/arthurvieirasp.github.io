@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trinitron TV - Ao Vivo</title>
+  <!-- Script HLS.js para reproduzir transmissões .m3u8 -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0f0f11;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+      font-family: sans-serif;
+    }
+    /* Container principal ajustado para telas móbile e desktop */
+    .tv-wrapper {
+      width: 100%;
+      max-width: 420px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tv-wrapper">
+    <!-- Carcaça do Gabinete da TV -->
+    <div style="width: 100%; box-sizing: border-box; padding: 14px 14px 18px 14px; background: linear-gradient(145deg, #2a2a2c, #1a1a1c); border: 2px solid #3a3a3d; border-radius: 12px; box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 10px 20px rgba(0,0,0,0.6);">
+
+      <!-- Detalhe/Marca no Topo (Estilo Trinitron) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding: 0 2px;">
+        <span style="font-family: Arial, sans-serif; font-size: 8px; font-weight: bold; color: #888; letter-spacing: 1px; text-transform: uppercase;">TRINITRON 4:3</span>
+        <span id="tvChannelName" style="font-family: monospace; font-size: 8px; font-weight: bold; color: #4ade80; text-transform: uppercase;">DESLIGADA</span>
+      </div>
+
+      <!-- Bezel/Borda Interna de Vidro -->
+      <div style="padding: 4px; background: #0a0a0c; border-radius: 8px; box-shadow: inset 0 0 10px #000;">
+        
+        <!-- Tela do Vídeo Proporção 4:3 -->
+        <div style="position: relative; width: 100%; padding-bottom: 75%; height: 0; overflow: hidden; border-radius: 6px; background: #000; box-shadow: inset 0 0 15px rgba(0,0,0,0.8);">
+          
+          <!-- Container dos Players -->
+          <div id="tvScreen" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+
+          <!-- Menu Guia de Canais On-Screen -->
+          <div id="tvChannelMenu" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 10, 14, 0.92); z-index: 20; display: none; flex-direction: column; padding: 8px; box-sizing: border-box; border: 1px solid #4ade80; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 4px; margin-bottom: 6px;">
+              <span style="font-family: monospace; font-size: 9px; font-weight: bold; color: #4ade80; text-transform: uppercase; letter-spacing: 1px;">GUIA DE CANAIS</span>
+              <button onclick="toggleTvMenu()" style="background: none; border: none; color: #888; font-family: monospace; font-size: 10px; cursor: pointer;">✕</button>
+            </div>
+            <div id="tvMenuList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px;"></div>
+          </div>
+
+          <!-- Faixa OSD Estilo TV a Cabo (Terço Inferior) -->
+          <div id="tvOsdBanner" style="position: absolute; bottom: 0; left: 0; width: 100%; height: 32%; background: linear-gradient(180deg, rgba(0,0,0,0.75), rgba(10,10,12,0.95)); border-top: 2px solid #4ade80; box-sizing: border-box; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; z-index: 10; transition: opacity 0.5s ease; opacity: 0; pointer-events: none;">
+            <div>
+              <span style="font-family: monospace; font-size: 7px; color: #888; display: block; text-transform: uppercase; letter-spacing: 0.5px;">Transmissão ao Vivo</span>
+              <span id="osdChannelTitle" style="font-family: monospace; font-size: 10px; font-weight: bold; color: #4ade80; text-transform: uppercase; letter-spacing: 1px;">CH 01 - BAND</span>
+            </div>
+            <div style="text-align: right;">
+              <span id="osdClock" style="font-family: monospace; font-size: 11px; font-weight: bold; color: #ffffff; letter-spacing: 1px;">00:00</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Grade e Botões de Controle da TV (Rodapé da Moldura) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 2px;">
+        <!-- Botão Power -->
+        <button onclick="toggleTvPower()" style="background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Ligar / Desligar TV">
+          <span id="powerLed" style="display: inline-block; width: 6px; height: 6px; background: #551111; border-radius: 50%; box-shadow: none; transition: all 0.3s ease;"></span>
+          <span style="font-family: monospace; font-size: 8px; color: #888;">POWER</span>
+        </button>
+
+        <!-- Botões de Controle -->
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <button onclick="toggleTvMenu()" style="background: #333336; color: #4ade80; border: 1px solid #444; border-radius: 3px; font-size: 8px; font-weight: bold; font-family: monospace; padding: 2px 5px; cursor: pointer;" title="Menu de Canais">MENU</button>
+          <button onclick="mudarCanal(-1)" style="background: #333336; color: #aaa; border: 1px solid #444; border-radius: 3px; font-size: 9px; font-family: monospace; padding: 2px 5px; cursor: pointer;" title="Canal Anterior">CH -</button>
+          <button onclick="mudarCanal(1)" style="background: #333336; color: #aaa; border: 1px solid #444; border-radius: 3px; font-size: 9px; font-family: monospace; padding: 2px 5px; cursor: pointer;" title="Próximo Canal">CH +</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const CANAIS = [
+        {
+          nome: "13 - BAND",
+          tipo: "hls",
+          url: "https://dai.google.com/linear/hls/pa/event/f0Tz47QTSQy_RsfSP_WcSA/stream/134d1e01-5d93-4410-a361-4aa634d1d59d:SCL2/variant/db41dabc175aace8c60ccd8dd182f588/bandwidth/5160000.m3u8"
+        },
+        {
+          nome: "04 - SBT",
+          tipo: "youtube",
+          embedUrl: "https://www.youtube.com/embed/LLpNUqHVam8?autoplay=1&modestbranding=1&rel=0"
+        },
+        {
+          nome: "34 - REDE VIDA",
+          tipo: "youtube",
+          embedUrl: "https://www.youtube.com/embed/VpqswW3BMmY?autoplay=1&modestbranding=1&rel=0"
+        },
+        {
+          nome: "42 - RECORD NEWS",
+          tipo: "youtube",
+          embedUrl: "https://www.youtube.com/embed/h0hx2iKVQwA?autoplay=1&modestbranding=1&rel=0"
+        },
+        {
+          nome: "51 - JOVEM PAN",
+          tipo: "youtube",
+          embedUrl: "https://www.youtube.com/embed/eTz4XgOQaAE?autoplay=1&modestbranding=1&rel=0"
+        },
+        {
+          nome: "07 - ABC7NY",
+          tipo: "youtube",
+          embedUrl: "https://www.youtube.com/embed/VrhYz4CL70I?autoplay=1&modestbranding=1&rel=0"
+        }
+      ];
+
+      let canalAtual = 0;
+      let hlsInstance = null;
+      let tvLigada = false;
+      let osdTimeout = null;
+
+      function atualizarRelogio() {
+        const now = new Date();
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const osdClock = document.getElementById('osdClock');
+        if (osdClock) osdClock.textContent = `${hh}:${mm}`;
+      }
+      setInterval(atualizarRelogio, 1000);
+      atualizarRelogio();
+
+      function renderizarMenuCanais() {
+        const listContainer = document.getElementById('tvMenuList');
+        if (!listContainer) return;
+
+        listContainer.innerHTML = '';
+        CANAIS.forEach((canal, idx) => {
+          const btn = document.createElement('button');
+          const isSelected = idx === canalAtual && tvLigada;
+          btn.style.cssText = `
+            text-align: left;
+            background: ${isSelected ? '#15803d' : '#1e1e24'};
+            color: ${isSelected ? '#ffffff' : '#ccc'};
+            border: 1px solid ${isSelected ? '#22c55e' : '#333'};
+            border-radius: 3px;
+            padding: 6px 8px;
+            font-family: monospace;
+            font-size: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          `;
+          btn.innerHTML = `<span>${canal.nome}</span>${isSelected ? '<span style="font-size: 8px;">● no ar</span>' : ''}`;
+          btn.onclick = () => selecionarCanalViaMenu(idx);
+          listContainer.appendChild(btn);
+        });
+      }
+
+      window.toggleTvMenu = function() {
+        const menu = document.getElementById('tvChannelMenu');
+        if (!menu) return;
+        if (menu.style.display === 'none' || menu.style.display === '') {
+          renderizarMenuCanais();
+          menu.style.display = 'flex';
+        } else {
+          menu.style.display = 'none';
+        }
+      };
+
+      function selecionarCanalViaMenu(index) {
+        if (!tvLigada) {
+          tvLigada = true;
+          const led = document.getElementById('powerLed');
+          led.style.background = "#ff3b30";
+          led.style.boxShadow = "0 0 6px #ff3b30";
+        }
+        canalAtual = index;
+        const menu = document.getElementById('tvChannelMenu');
+        if (menu) menu.style.display = 'none';
+        window.carregarCanal(canalAtual);
+      }
+
+      function exibirOsdBanner(nomeCanal) {
+        const banner = document.getElementById('tvOsdBanner');
+        const title = document.getElementById('osdChannelTitle');
+        if (!banner || !title) return;
+
+        title.textContent = nomeCanal;
+        banner.style.opacity = '1';
+
+        if (osdTimeout) clearTimeout(osdTimeout);
+        osdTimeout = setTimeout(() => {
+          banner.style.opacity = '0';
+        }, 10000);
+      }
+
+      window.carregarCanal = function(index) {
+        const container = document.getElementById('tvScreen');
+        const channelLabel = document.getElementById('tvChannelName');
+        const canal = CANAIS[index];
+
+        channelLabel.textContent = canal.nome;
+        exhibirOsdBanner(canal.nome);
+
+        if (hlsInstance) {
+          hlsInstance.destroy();
+          hlsInstance = null;
+        }
+
+        container.innerHTML = '';
+
+        if (canal.tipo === 'youtube') {
+          const iframe = document.createElement('iframe');
+          iframe.src = canal.embedUrl;
+          iframe.frameBorder = "0";
+          iframe.allow = "autoplay; encrypted-media";
+          iframe.allowFullscreen = true;
+          iframe.style.cssText = "position: absolute; top: -18%; left: -18%; width: 140%; height: 140%; border: none;";
+          container.appendChild(iframe);
+        } else if (canal.tipo === 'hls') {
+          const video = document.createElement('video');
+          video.controls = true;
+          video.autoplay = true;
+          video.muted = false;
+          video.style.cssText = "position: absolute; top: -18%; left: -18%; width: 140%; height: 140%; border: none; background: #000; object-fit: cover;";
+          container.appendChild(video);
+
+          if (Hls.isSupported()) {
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(canal.url);
+            hlsInstance.attachMedia(video);
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+              video.play().catch(e => console.log("Autoplay bloqueado:", e));
+            });
+          } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = canal.url;
+            video.play().catch(e => console.log("Autoplay bloqueado:", e));
+          }
+        }
+      };
+
+      window.desligarTv = function() {
+        const container = document.getElementById('tvScreen');
+        const channelLabel = document.getElementById('tvChannelName');
+        const led = document.getElementById('powerLed');
+        const banner = document.getElementById('tvOsdBanner');
+        const menu = document.getElementById('tvChannelMenu');
+
+        if (hlsInstance) {
+          hlsInstance.destroy();
+          hlsInstance = null;
+        }
+
+        container.innerHTML = '';
+        channelLabel.textContent = "DESLIGADA";
+        if (banner) banner.style.opacity = '0';
+        if (menu) menu.style.display = 'none';
+
+        led.style.background = "#551111";
+        led.style.boxShadow = "none";
+        tvLigada = false;
+      };
+
+      window.toggleTvPower = function() {
+        if (tvLigada) {
+          window.desligarTv();
+        } else {
+          tvLigada = true;
+          const led = document.getElementById('powerLed');
+          led.style.background = "#ff3b30";
+          led.style.boxShadow = "0 0 6px #ff3b30";
+          window.carregarCanal(canalAtual);
+        }
+      };
+
+      window.mudarCanal = function(direcao) {
+        if (!tvLigada) {
+          tvLigada = true;
+          const led = document.getElementById('powerLed');
+          led.style.background = "#ff3b30";
+          led.style.boxShadow = "0 0 6px #ff3b30";
+        }
+        canalAtual = (canalAtual + direcao + CANAIS.length) % CANAIS.length;
+        window.carregarCanal(canalAtual);
+      };
+
+      window.desligarTv();
+    })();
+  </script>
+</body>
+</html>
